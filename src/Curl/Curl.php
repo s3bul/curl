@@ -77,7 +77,9 @@ class Curl extends PhpCurl
      */
     private function httpBuildQuery($data, string $numericPrefix = null, string $argSeparator = null, int $encType = null): string
     {
-        return http_build_query($data, $numericPrefix, $argSeparator, is_null($encType) ? PHP_QUERY_RFC1738 : $encType);
+        $prefix = is_null($numericPrefix) ? '' : $numericPrefix;
+        $separator = is_null($argSeparator) ? '&' : $argSeparator;
+        return http_build_query($data, $prefix, $separator, is_null($encType) ? PHP_QUERY_RFC1738 : $encType);
     }
 
     /**
