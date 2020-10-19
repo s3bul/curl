@@ -21,6 +21,11 @@ class Curl extends PhpCurl
     private array $_cookies = [];
 
     /**
+     * @var string[]
+     */
+    private array $_headers = [];
+
+    /**
      * @var int
      * @link https://php.net/manual/en/function.http-build-query.php
      */
@@ -203,6 +208,40 @@ class Curl extends PhpCurl
         $this->setOpt(CURLOPT_URL, $url);
         $this->setOpt(CURLOPT_CUSTOMREQUEST, 'DELETE');
         $this->exec();
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function clearHeaders(): self
+    {
+        $this->_headers = [];
+        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->_headers));
+        return $this;
+    }
+
+    /**
+     * @param string[] $keys
+     * @return $this
+     */
+    public function removeHeaders(array $keys): self
+    {
+        array_map(function(string $key) {
+            unset($this->_headers[$key]);
+        }, $keys);
+        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->_headers));
+        return $this;
+    }
+
+    /**
+     * @param string $key
+     * @return $this
+     */
+    public function removeHeader(string $key): self
+    {
+        unset($this->_headers[$key]);
+        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->_headers));
         return $this;
     }
 
