@@ -108,7 +108,7 @@ class Curl extends PhpCurl
         $prefix = is_null($numericPrefix) ? '' : $numericPrefix;
         $separator = is_null($argSeparator) ? '&' : $argSeparator;
         $result = http_build_query($data, $prefix, $separator, is_null($encType) ? PHP_QUERY_RFC1738 : $encType);
-        return $this->isDisableQueryArrayBracket() ? preg_replace('/%5B\d+%5D/', '', $result) : $result;
+        return $this->isDisableQueryArrayBracket() ? preg_replace('/%5B\d*%5D/', '', $result) : $result;
     }
 
     /**
