@@ -80,6 +80,25 @@ class Curl extends PhpCurl
 
     /**
      * @return bool
+     * @deprecated
+     */
+    public function isDisableQueryArrayBracket(): bool
+    {
+        return $this->isDisableArrayBracketInQuery();
+    }
+
+    /**
+     * @param bool $disableQueryArrayBracket
+     * @return $this
+     * @deprecated
+     */
+    public function setDisableQueryArrayBracket(bool $disableQueryArrayBracket): self
+    {
+        return $this->setDisableArrayBracketInQuery($disableQueryArrayBracket);
+    }
+
+    /**
+     * @return bool
      */
     public function isDisableArrayBracketInQuery(): bool
     {
