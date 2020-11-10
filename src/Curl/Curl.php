@@ -40,7 +40,7 @@ class Curl extends PhpCurl
     /**
      * @var bool
      */
-    private bool $disableQueryArrayBracket = false;
+    private bool $disableArrayBracketInQuery = false;
 
     /**
      * @return int
@@ -81,18 +81,18 @@ class Curl extends PhpCurl
     /**
      * @return bool
      */
-    public function isDisableQueryArrayBracket(): bool
+    public function isDisableArrayBracketInQuery(): bool
     {
-        return $this->disableQueryArrayBracket;
+        return $this->disableArrayBracketInQuery;
     }
 
     /**
-     * @param bool $disableQueryArrayBracket
+     * @param bool $disableArrayBracketInQuery
      * @return $this
      */
-    public function setDisableQueryArrayBracket(bool $disableQueryArrayBracket): self
+    public function setDisableArrayBracketInQuery(bool $disableArrayBracketInQuery): self
     {
-        $this->disableQueryArrayBracket = $disableQueryArrayBracket;
+        $this->disableArrayBracketInQuery = $disableArrayBracketInQuery;
         return $this;
     }
 
@@ -108,7 +108,7 @@ class Curl extends PhpCurl
         $prefix = is_null($numericPrefix) ? '' : $numericPrefix;
         $separator = is_null($argSeparator) ? '&' : $argSeparator;
         $result = http_build_query($data, $prefix, $separator, is_null($encType) ? PHP_QUERY_RFC1738 : $encType);
-        return $this->isDisableQueryArrayBracket() ? preg_replace('/%5B\d*%5D/', '', $result) : $result;
+        return $this->isDisableArrayBracketInQuery() ? preg_replace('/%5B\d*%5D/', '', $result) : $result;
     }
 
     /**
