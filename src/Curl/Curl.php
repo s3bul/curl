@@ -38,22 +38,9 @@ class Curl extends PhpCurl
     private int $postFieldsEncType = PHP_QUERY_RFC1738;
 
     /**
-     * @return int
+     * @var bool
      */
-    private function getPostFieldsEncType(): int
-    {
-        return $this->postFieldsEncType;
-    }
-
-    /**
-     * @param int $postFieldsEncType
-     * @return $this
-     */
-    public function setPostFieldsEncType(int $postFieldsEncType): self
-    {
-        $this->postFieldsEncType = $postFieldsEncType;
-        return $this;
-    }
+    private bool $disableQueryArrayBracket = false;
 
     /**
      * @return int
@@ -74,6 +61,42 @@ class Curl extends PhpCurl
     }
 
     /**
+     * @return int
+     */
+    private function getPostFieldsEncType(): int
+    {
+        return $this->postFieldsEncType;
+    }
+
+    /**
+     * @param int $postFieldsEncType
+     * @return $this
+     */
+    public function setPostFieldsEncType(int $postFieldsEncType): self
+    {
+        $this->postFieldsEncType = $postFieldsEncType;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDisableQueryArrayBracket(): bool
+    {
+        return $this->disableQueryArrayBracket;
+    }
+
+    /**
+     * @param bool $disableQueryArrayBracket
+     * @return $this
+     */
+    public function setDisableQueryArrayBracket(bool $disableQueryArrayBracket): self
+    {
+        $this->disableQueryArrayBracket = $disableQueryArrayBracket;
+        return $this;
+    }
+
+    /**
      * @param mixed $data
      * @param string|null $numericPrefix
      * @param string|null $argSeparator
@@ -84,7 +107,8 @@ class Curl extends PhpCurl
     {
         $prefix = is_null($numericPrefix) ? '' : $numericPrefix;
         $separator = is_null($argSeparator) ? '&' : $argSeparator;
-        return http_build_query($data, $prefix, $separator, is_null($encType) ? PHP_QUERY_RFC1738 : $encType);
+        $result = http_build_query($data, $prefix, $separator, is_null($encType) ? PHP_QUERY_RFC1738 : $encType);
+        return $this->isDisableQueryArrayBracket() ? preg_replace('/%5B\d+%5D/', '', $result) : $result;
     }
 
     /**
