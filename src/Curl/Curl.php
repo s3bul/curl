@@ -197,6 +197,15 @@ class Curl extends PhpCurl
     /**
      * @inheritdoc
      */
+    public function post($url, $data = array(), $asJson = false): self
+    {
+        $this->setOpt(CURLOPT_CUSTOMREQUEST, 'POST');
+        return parent::post($url, $data, $asJson);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function put($url, $data = array(), $payload = true): self
     {
         if(!empty($data)) {
