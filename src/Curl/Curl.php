@@ -190,6 +190,7 @@ class Curl extends PhpCurl
             $this->setOpt(CURLOPT_URL, $url);
         }
         $this->setOpt(CURLOPT_HTTPGET, true);
+        $this->setOpt(CURLOPT_CUSTOMREQUEST, 'GET');
         $this->exec();
         return $this;
     }
