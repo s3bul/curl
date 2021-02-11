@@ -301,6 +301,20 @@ class Curl extends PhpCurl
     /**
      * @inheritdoc
      */
+    public function setHeader($key, $value): self
+    {
+        if(is_null($value)) {
+            return $this->removeHeader($key);
+        }
+
+        $this->_headers[$key] = $key . ': ' . $value;
+        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->_headers));
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setCookie($key, $value): self
     {
         $this->_cookies[$key] = $value;
