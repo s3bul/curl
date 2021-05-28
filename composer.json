@@ -1,7 +1,7 @@
 {
     "name": "s3bul/curl",
     "description": "Curl class for PHP",
-    "version": "1.3.0",
+    "version": "2.0.0-dev",
     "keywords": [
         "curl",
         "php"
@@ -9,19 +9,14 @@
     "homepage": "https://github.com/s3bul/curl",
     "type": "library",
     "require": {
-        "php": "^7.4",
-        "ext-curl": "*",
-        "curl/curl": "^2.3"
+        "php": "^7.4 | ^8.0",
+        "ext-curl": "*"
     },
     "license": "MIT",
     "authors": [
         {
-            "name": "php-mod/curl",
-            "homepage": "https://github.com/php-mod/curl"
-        },
-        {
             "name": "Sebastian Korzeniecki",
-            "email": "sebastian.korzeniecki@sprint.pl"
+            "email": "seba5zer@gmail.com"
         }
     ],
     "config": {

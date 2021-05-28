@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace S3bul\Curl;
 
-use Curl\Curl as PhpCurl;
 use CurlFile;
+use InvalidArgumentException;
+use const http\Client\Curl\Features\HTTP2;
 
 /**
  * Class Curl
@@ -13,17 +14,32 @@ use CurlFile;
  * @author Sebastian Korzeniecki <seba5zer@gmail.com>
  * @package S3bul\Curl
  */
-class Curl extends PhpCurl
+class Curl
 {
     /**
-     * @var string[]
+     * @var resource|null
      */
-    private array $_cookies = [];
+    private $client = null;
+
+    /**
+     * @var string|null
+     */
+    private ?string $url = null;
 
     /**
      * @var string[]
      */
-    private array $_headers = [];
+    private array $cookies = [];
+
+    /**
+     * @var string[]
+     */
+    private array $headers = [];
+
+    /**
+     * @var array
+     */
+    private array $options = [];
 
     /**
      * @var int
@@ -41,6 +57,197 @@ class Curl extends PhpCurl
      * @var bool
      */
     private bool $disableArrayBracketInQuery = false;
+
+    /**
+     * @param string|null $url
+     * @return $this
+     */
+    public function init(string $url = null, array $options = []): self {
+        $this->client = curl_init($url ?? $this->url);
+        curl_setopt_array($this->client, array_merge($this->getOptions(), $options));
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function reset(): self {
+        $this->client = null;
+        $this->url = null;
+        $this->cookies = [];
+        $this->headers = [];
+        $this->options = [];
+        return $this;
+    }
+
+    /**
+     * @throws InvalidArgumentException
+     */
+    private function checkClient(): void
+    {
+        if(is_null($this->client)) {
+            throw new InvalidArgumentException('Curl: First call "init" method');
+        }
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getUrl(): ?string
+    {
+        return $this->url;
+    }
+
+    /**
+     * @param string|null $url
+     * @return $this
+     */
+    public function setUrl(?string $url): self
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getCookies(): array
+    {
+        return $this->cookies;
+    }
+
+    /**
+     * @param string[] $cookies
+     * @return $this
+     */
+    public function setCookies(array $cookies): self
+    {
+        $this->cookies = [];
+        return $this->addCookies($cookies);
+    }
+
+    /**
+     * @param string[] $cookies
+     * @return $this
+     */
+    public function addCookies(array $cookies): self
+    {
+        foreach($cookies as $cookie => $value) {
+            $this->addCookie($cookie, $value);
+        }
+        return $this;
+    }
+
+    /**
+     * @param string $cookie
+     * @param string $value
+     * @return $this
+     */
+    public function addCookie(string $cookie, string $value): self
+    {
+        $this->cookies[$cookie] = $value;
+        return $this;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    /**
+     * @param string[] $headers
+     * @return $this
+     */
+    public function setHeaders(array $headers): self
+    {
+        $this->headers = [];
+        return $this->addHeaders($headers);
+    }
+
+    /**
+     * @param string[] $headers
+     * @return $this
+     */
+    public function addHeaders(array $headers): self
+    {
+        foreach($headers as $header => $value) {
+            $this->addHeader($header, $value);
+        }
+        return $this;
+    }
+
+    /**
+     * @param string $header
+     * @param string $value
+     * @return $this
+     */
+    public function addHeader(string $header, string $value): self
+    {
+        $this->headers[$header] = "$header: $value";
+        return $this;
+    }
+
+    public function setCurlHeaders(array $headers): self {
+
+    }
+
+    public function setCurlHeader(string $header, string $value): self {
+        $this->addHeader($header, $value);
+
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        $custom = [];
+        if(count($this->cookies) > 0) {
+            $custom[CURLOPT_COOKIE] = http_build_query($this->cookies, '', '; ');
+        }
+        if(count($this->headers) > 0) {
+            $custom[CURLOPT_HTTPHEADER] = array_values($this->headers);
+        }
+        return array_merge($this->options, $custom);
+    }
+
+    /**
+     * @param array $options
+     * @return $this
+     */
+    public function setOptions(array $options): self
+    {
+        $this->options = [];
+        return $this->addOptions($options);
+    }
+
+    /**
+     * @param array $options
+     * @return $this
+     */
+    public function addOptions(array $options): self
+    {
+        foreach($options as $option => $value) {
+            $this->addOption($option, $value);
+        }
+        return $this;
+    }
+
+    /**
+     * @param int $option
+     * @param mixed $value
+     * @return $this
+     */
+    public function addOption(int $option, $value): self
+    {
+        $this->options[$option] = $value;
+        return $this;
+    }
 
     /**
      * @return int
@@ -269,8 +476,8 @@ class Curl extends PhpCurl
      */
     public function clearHeaders(): self
     {
-        $this->_headers = [];
-        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->_headers));
+        $this->headers = [];
+        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->headers));
         return $this;
     }
 
@@ -281,9 +488,9 @@ class Curl extends PhpCurl
     public function removeHeaders(array $keys): self
     {
         array_map(function(string $key) {
-            unset($this->_headers[$key]);
+            unset($this->headers[$key]);
         }, $keys);
-        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->_headers));
+        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->headers));
         return $this;
     }
 
@@ -293,8 +500,8 @@ class Curl extends PhpCurl
      */
     public function removeHeader(string $key): self
     {
-        unset($this->_headers[$key]);
-        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->_headers));
+        unset($this->headers[$key]);
+        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->headers));
         return $this;
     }
 
@@ -307,8 +514,8 @@ class Curl extends PhpCurl
             return $this->removeHeader($key);
         }
 
-        $this->_headers[$key] = $key . ': ' . $value;
-        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->_headers));
+        $this->headers[$key] = $key . ': ' . $value;
+        $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->headers));
         return $this;
     }
 
@@ -317,8 +524,8 @@ class Curl extends PhpCurl
      */
     public function setCookie($key, $value): self
     {
-        $this->_cookies[$key] = $value;
-        $this->setOpt(CURLOPT_COOKIE, $this->httpBuildQuery($this->_cookies, '', '; '));
+        $this->cookies[$key] = $value;
+        $this->setOpt(CURLOPT_COOKIE, $this->httpBuildQuery($this->cookies, '', '; '));
         return $this;
     }
 
