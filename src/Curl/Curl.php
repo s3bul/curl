@@ -321,5 +321,12 @@ class Curl extends PhpCurl
         $this->setOpt(CURLOPT_COOKIE, $this->httpBuildQuery($this->_cookies, '', '; '));
         return $this;
     }
-
+    
+    /**
+     * @return string[]
+     */
+    public function getHeaders(): array
+    {
+        return $this->_headers;
+    }
 }
