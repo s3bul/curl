@@ -198,23 +198,19 @@ class Curl extends PhpCurl
     /**
      * @inheritdoc
      */
-    public function post($url, $data = array(), $asJson = false): self
-    {
-        $this->setOpt(CURLOPT_CUSTOMREQUEST, 'POST');
-        return parent::post($url, $data, $asJson);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function put($url, $data = array(), $payload = true): self
+    public function put($url, $data = [], $payload = true, $asJson = false): self
     {
         if(!empty($data)) {
             if($payload === false) {
                 $url .= '?' . $this->buildUrlQuery($data);
             }
             else {
-                $this->preparePayload($data);
+                if($asJson) {
+                    $this->prepareJsonPayload($data);
+                }
+                else {
+                    $this->preparePayload($data);
+                }
             }
         }
 
@@ -227,14 +223,19 @@ class Curl extends PhpCurl
     /**
      * @inheritdoc
      */
-    public function patch($url, $data = array(), $payload = true): self
+    public function patch($url, $data = [], $payload = true, $asJson = false): self
     {
         if(!empty($data)) {
             if($payload === false) {
                 $url .= '?' . $this->buildUrlQuery($data);
             }
             else {
-                $this->preparePayload($data);
+                if($asJson) {
+                    $this->prepareJsonPayload($data);
+                }
+                else {
+                    $this->preparePayload($data);
+                }
             }
         }
 
@@ -247,7 +248,7 @@ class Curl extends PhpCurl
     /**
      * @inheritdoc
      */
-    public function delete($url, $data = array(), $payload = true): self
+    public function delete($url, $data = [], $payload = true): self
     {
         if(!empty($data)) {
             if($payload === false) {
