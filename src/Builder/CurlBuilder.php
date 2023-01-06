@@ -53,6 +53,8 @@ class CurlBuilder
      */
     private array $options = [];
 
+    private string|bool|null $response = null;
+
     /**
      * @var int
      * @link https://php.net/manual/en/function.http-build-query.php
@@ -367,6 +369,14 @@ class CurlBuilder
     }
 
     /**
+     * @return bool|string|null
+     */
+    public function getResponse(): bool|string|null
+    {
+        return $this->response;
+    }
+
+    /**
      * @param object|array $data
      * @param string|null $numericPrefix
      * @param string|null $argSeparator
@@ -428,30 +438,31 @@ class CurlBuilder
      * @param string $request
      * @param bool $payload
      * @param bool $json
-     * @return string|bool
+     * @return $this
      */
-    private function callCurl(string $request, bool $payload = false, bool $json = true): string|bool
+    private function callCurl(string $request, bool $payload = false, bool $json = true): self
     {
         $this->checkClient();
         $this->setCurlOption(CURLOPT_CUSTOMREQUEST, $request);
         if (!empty($data)) {
-            if($payload) {
+            if ($payload) {
                 $this->setCurlOption(CURLOPT_POST, true);
                 $this->setCurlOption(CURLOPT_POSTFIELDS, $json ? json_encode($data) : $data);
-            }
-            else {
+            } else {
                 $this->setCurlOption(CURLOPT_URL, $this->url . '?' . $this->buildUrlQuery($data));
             }
         }
 
-        return curl_exec($this->handle);
+        $this->response = curl_exec($this->handle);
+
+        return $this;
     }
 
     /**
      * @param array $data
-     * @return string|bool
+     * @return $this
      */
-    public function get(array $data = []): string|bool
+    public function get(array $data = []): self
     {
         return $this->callCurl(self::GET);
     }
@@ -459,9 +470,9 @@ class CurlBuilder
     /**
      * @param array|object|string $data
      * @param bool $json
-     * @return string|bool
+     * @return $this
      */
-    public function post(array|object|string $data = [], bool $json = true): string|bool
+    public function post(array|object|string $data = [], bool $json = true): self
     {
         return $this->callCurl(self::POST, true, $json);
     }
@@ -469,9 +480,9 @@ class CurlBuilder
     /**
      * @param array|object|string $data
      * @param bool $json
-     * @return string|bool
+     * @return $this
      */
-    public function put(array|object|string $data = [], bool $json = true): string|bool
+    public function put(array|object|string $data = [], bool $json = true): self
     {
         return $this->callCurl(self::PUT, true, $json);
     }
@@ -479,9 +490,9 @@ class CurlBuilder
     /**
      * @param array|object|string $data
      * @param bool $json
-     * @return string|bool
+     * @return $this
      */
-    public function patch(array|object|string $data = [], bool $json = true): string|bool
+    public function patch(array|object|string $data = [], bool $json = true): self
     {
         return $this->callCurl(self::PATCH, true, $json);
     }
@@ -489,9 +500,9 @@ class CurlBuilder
     /**
      * @param array|object|string $data
      * @param bool $json
-     * @return string|bool
+     * @return $this
      */
-    public function delete(array|object|string $data = [], bool $json = true): string|bool
+    public function delete(array|object|string $data = [], bool $json = true): self
     {
         return $this->callCurl(self::DELETE, true, $json);
     }
