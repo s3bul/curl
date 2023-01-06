@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace S3bul\Curl;
 
 use CurlFile;
+use CurlHandle;
 use InvalidArgumentException;
-use const http\Client\Curl\Features\HTTP2;
 
 /**
  * Class Curl
@@ -17,9 +17,9 @@ use const http\Client\Curl\Features\HTTP2;
 class Curl
 {
     /**
-     * @var resource|null
+     * @var CurlHandle|null
      */
-    private $client = null;
+    private ?CurlHandle $client = null;
 
     /**
      * @var string|null
@@ -243,7 +243,7 @@ class Curl
      * @param mixed $value
      * @return $this
      */
-    public function addOption(int $option, $value): self
+    public function addOption(int $option, mixed $value): self
     {
         $this->options[$option] = $value;
         return $this;
@@ -323,13 +323,13 @@ class Curl
     }
 
     /**
-     * @param mixed $data
+     * @param object|array $data
      * @param string|null $numericPrefix
      * @param string|null $argSeparator
      * @param int|null $encType
      * @return string
      */
-    private function httpBuildQuery($data, string $numericPrefix = null, string $argSeparator = null, int $encType = null): string
+    private function httpBuildQuery(object|array $data, string $numericPrefix = null, string $argSeparator = null, int $encType = null): string
     {
         $prefix = is_null($numericPrefix) ? '' : $numericPrefix;
         $separator = is_null($argSeparator) ? '&' : $argSeparator;
@@ -370,7 +370,6 @@ class Curl
             $skip = false;
             foreach($data as $key => $value) {
                 // If a value is an instance of CurlFile skip the http_build_query
-                // see issue https://github.com/php-mod/curl/issues/46
                 // suggestion from: https://stackoverflow.com/a/36603038/4611030
                 if($value instanceof CurlFile) {
                     $skip = true;
