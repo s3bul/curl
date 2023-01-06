@@ -53,6 +53,9 @@ class CurlBuilder
      */
     private array $options = [];
 
+    /**
+     * @var string|bool|null
+     */
     private string|bool|null $response = null;
 
     /**
