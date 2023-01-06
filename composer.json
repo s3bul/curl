@@ -21,12 +21,18 @@
     },
     "autoload": {
         "psr-4": {
-            "S3bul\\": "src/"
+            "S3bul\\": "src/",
+            "Tests\\": "tests/"
         }
     },
     "require": {
         "php": "^8.2",
         "ext-curl": "*"
+    },
+    "require-dev": {
+        "codeception/codeception": "^5.0",
+        "codeception/module-phpbrowser": "*",
+        "codeception/module-asserts": "*"
     },
     "scripts": {
         "safe-update": [

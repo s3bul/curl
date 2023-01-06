@@ -1,18 +1,18 @@
 <?php
 declare(strict_types=1);
 
-namespace S3bul\Builder;
+namespace S3bul\Client;
 
 use CurlHandle;
 use InvalidArgumentException;
 
 /**
- * Class CurlBuilder
+ * Class CurlClient
  *
  * @author Sebastian Korzeniecki <seba5zer@gmail.com>
- * @package S3bul\Builder
+ * @package S3bul\Client
  */
-class CurlBuilder
+class CurlClient
 {
     /**
      * HTTP request methods
@@ -85,10 +85,10 @@ class CurlBuilder
      * @param string[] $options
      * @return $this
      */
-    public function produceHandle(string $url = null, array $options = []): self
+    public function init(string $url = null, array $options = []): self
     {
         $this->handle = curl_init($url ?? $this->url);
-        curl_setopt_array($this->handle, array_merge($this->getOptions(), $options));
+        curl_setopt_array($this->handle, $options + $this->getOptions());
 
         return $this;
     }
@@ -133,54 +133,6 @@ class CurlBuilder
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function getOptions(): array
-    {
-        $custom = [];
-        if (count($this->cookies) > 0) {
-            $custom[CURLOPT_COOKIE] = $this->httpBuildQuery($this->cookies, '', '; ');
-        }
-        if (count($this->headers) > 0) {
-            $custom[CURLOPT_HTTPHEADER] = array_values($this->headers);
-        }
-        $custom[CURLOPT_RETURNTRANSFER] = $this->returnTransfer;
-        return array_merge($this->options, $custom);
-    }
-
-    /**
-     * @param int $option
-     * @param mixed $value
-     * @return $this
-     */
-    public function addOption(int $option, mixed $value): self
-    {
-        $this->options[$option] = $value;
-        return $this;
-    }
-
-    /**
-     * @param array $options
-     * @return $this
-     */
-    public function addOptions(array $options): self
-    {
-        foreach ($options as $option => $value) {
-            $this->addOption($option, $value);
-        }
-        return $this;
-    }
-
-    /**
-     * @param array $options
-     * @return $this
-     */
-    public function setOptions(array $options): self
-    {
-        $this->options = [];
-        return $this->addOptions($options);
-    }
 
     /**
      * @return string[]
@@ -297,6 +249,55 @@ class CurlBuilder
     {
         $this->cookies = [];
         return $this->addCookies($cookies);
+    }
+
+    /**
+     * @return array
+     */
+    public function getOptions(): array
+    {
+        $custom = [];
+        if (count($this->cookies) > 0) {
+            $custom[CURLOPT_COOKIE] = $this->httpBuildQuery($this->cookies, '', '; ');
+        }
+        if (count($this->headers) > 0) {
+            $custom[CURLOPT_HTTPHEADER] = array_values($this->headers);
+        }
+        $custom[CURLOPT_RETURNTRANSFER] = $this->returnTransfer;
+        return $custom + $this->options;
+    }
+
+    /**
+     * @param int $option
+     * @param mixed $value
+     * @return $this
+     */
+    public function addOption(int $option, mixed $value): self
+    {
+        $this->options[$option] = $value;
+        return $this;
+    }
+
+    /**
+     * @param array $options
+     * @return $this
+     */
+    public function addOptions(array $options): self
+    {
+        foreach ($options as $option => $value) {
+            $this->addOption($option, $value);
+        }
+        return $this;
+    }
+
+    /**
+     * @param array $options
+     * @return $this
+     */
+    public function setOptions(array $options): self
+    {
+        $this->options = [];
+        return $this->addOptions($options);
     }
 
     /**
@@ -421,9 +422,26 @@ class CurlBuilder
      */
     private function checkClient(): void
     {
-        if (is_null($this->handle)) {
+        if (!($this->handle instanceof CurlHandle)) {
             throw new InvalidArgumentException('Curl: First call "produceHandle" method');
         }
+    }
+
+    /**
+     * @param int|null $option
+     * @return mixed
+     */
+    public function getCurlInfo(?int $option): mixed
+    {
+        return curl_getinfo($this->handle, $option);
+    }
+
+    /**
+     * @return int
+     */
+    public function getCurlInfoHttpCode(): int
+    {
+        return $this->getCurlInfo(CURLINFO_HTTP_CODE);
     }
 
     /**
@@ -439,11 +457,12 @@ class CurlBuilder
 
     /**
      * @param string $request
+     * @param array|object|string $data
      * @param bool $payload
      * @param bool $json
      * @return $this
      */
-    private function callCurl(string $request, bool $payload = false, bool $json = true): self
+    private function callCurl(string $request, array|object|string $data = [], bool $payload = false, bool $json = true): self
     {
         $this->checkClient();
         $this->setCurlOption(CURLOPT_CUSTOMREQUEST, $request);
@@ -477,7 +496,7 @@ class CurlBuilder
      */
     public function post(array|object|string $data = [], bool $json = true): self
     {
-        return $this->callCurl(self::POST, true, $json);
+        return $this->callCurl(self::POST, $data, true, $json);
     }
 
     /**
@@ -487,7 +506,7 @@ class CurlBuilder
      */
     public function put(array|object|string $data = [], bool $json = true): self
     {
-        return $this->callCurl(self::PUT, true, $json);
+        return $this->callCurl(self::PUT, $data, true, $json);
     }
 
     /**
@@ -497,7 +516,7 @@ class CurlBuilder
      */
     public function patch(array|object|string $data = [], bool $json = true): self
     {
-        return $this->callCurl(self::PATCH, true, $json);
+        return $this->callCurl(self::PATCH, $data, true, $json);
     }
 
     /**
@@ -507,7 +526,7 @@ class CurlBuilder
      */
     public function delete(array|object|string $data = [], bool $json = true): self
     {
-        return $this->callCurl(self::DELETE, true, $json);
+        return $this->callCurl(self::DELETE, $data, true, $json);
     }
 
 }
