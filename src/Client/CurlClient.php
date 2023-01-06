@@ -423,7 +423,7 @@ class CurlClient
     private function checkClient(): void
     {
         if (!($this->handle instanceof CurlHandle)) {
-            throw new InvalidArgumentException('Curl: First call "produceHandle" method');
+            throw new InvalidArgumentException('Curl: First call "init" method');
         }
     }
 

@@ -1,42 +1,46 @@
 {
-    "name": "s3bul/curl",
-    "description": "Curl client for PHP",
-    "version": "2.0.0",
-    "keywords": [
-        "curl",
-        "php"
-    ],
-    "minimum-stability": "stable",
-    "homepage": "https://github.com/s3bul/curl",
-    "license": "MIT",
-    "type": "library",
-    "authors": [
-        {
-            "name": "Sebastian Korzeniecki",
-            "email": "seba5zer@gmail.com"
-        }
-    ],
-    "config": {
-        "sort-packages": true
-    },
-    "autoload": {
-        "psr-4": {
-            "S3bul\\": "src/",
-            "Tests\\": "tests/"
-        }
-    },
-    "require": {
-        "php": "^8.2",
-        "ext-curl": "*"
-    },
-    "require-dev": {
-        "codeception/codeception": "^5.0",
-        "codeception/module-phpbrowser": "*",
-        "codeception/module-asserts": "*"
-    },
-    "scripts": {
-        "safe-update": [
-            "composer update --no-interaction --no-ansi --ignore-platform-reqs"
-        ]
+  "name": "s3bul/curl",
+  "description": "Curl client for PHP",
+  "version": "2.0.0",
+  "keywords": [
+    "curl",
+    "php"
+  ],
+  "minimum-stability": "stable",
+  "homepage": "https://github.com/s3bul/curl",
+  "license": "MIT",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Sebastian Korzeniecki",
+      "email": "seba5zer@gmail.com"
     }
+  ],
+  "config": {
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "S3bul\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "require": {
+    "php": "^8.2",
+    "ext-curl": "*"
+  },
+  "require-dev": {
+    "codeception/codeception": "^5.0",
+    "codeception/module-phpbrowser": "*",
+    "codeception/module-asserts": "*"
+  },
+  "scripts": {
+    "safe-update": [
+      "composer update --no-interaction --no-ansi --ignore-platform-reqs"
+    ]
+  }
 }
