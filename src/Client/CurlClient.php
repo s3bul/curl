@@ -380,11 +380,15 @@ class CurlClient
     }
 
     /**
+     * This method remove curl handle {@see CurlClient::$handle}, call again {@see CurlClient::init()} for recreate
      * @return bool|string|null
      */
     public function getResponse(): bool|string|null
     {
-        return $this->response;
+        $response = $this->response;
+        $this->handle = null;
+        $this->response = null;
+        return $response;
     }
 
     /**
