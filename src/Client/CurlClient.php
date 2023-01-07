@@ -486,7 +486,7 @@ class CurlClient
      */
     public function get(array $data = []): self
     {
-        return $this->callCurl(self::GET);
+        return $this->callCurl(self::GET, $data);
     }
 
     /**
