@@ -37,6 +37,7 @@ class CurlClientTest extends Unit
         $this->tester->assertArrayHasKey(CURLOPT_SSL_VERIFYHOST, $curl->getOptions());
         $this->tester->assertArrayHasKey(CURLOPT_RETURNTRANSFER, $curl->getOptions());
         $this->tester->assertEquals(true, $curl->getOption(CURLOPT_SSL_VERIFYPEER));
+        $this->tester->assertEquals('test', $curl->getHeader('Curl-Client'));
         $this->tester->assertEquals(['Curl-Client: test'], $curl->getOptions()[CURLOPT_HTTPHEADER]);
         $this->tester->assertEquals(2, $curl->getOption(CURLOPT_SSL_VERIFYHOST));
         $this->tester->assertEquals(false, $curl->getOption(CURLOPT_RETURNTRANSFER));
