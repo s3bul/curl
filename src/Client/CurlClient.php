@@ -93,7 +93,7 @@ class CurlClient
     public function init(string $url = null, array $options = []): self
     {
         $this->url = $url ?? $this->url;
-        $this->addOptions([CURLOPT_URL => $this->url] + $options + self::DEFAULT_OPTIONS);
+        $this->addOptions([CURLOPT_URL => $this->url] + $options);
         $this->handle = $this->lastHandle = curl_init();
         curl_setopt_array($this->handle, $this->getOptions());
 
