@@ -5,6 +5,7 @@ namespace S3bul\Client;
 
 use CurlHandle;
 use InvalidArgumentException;
+use S3bul\Exception\CurlExecException;
 
 /**
  * Class CurlClient
@@ -36,6 +37,11 @@ class CurlClient
      * @var CurlHandle|null
      */
     private ?CurlHandle $handle = null;
+
+    /**
+     * @var CurlHandle|null
+     */
+    private ?CurlHandle $lastHandle = null;
 
     /**
      * @var string|null
@@ -88,7 +94,7 @@ class CurlClient
     {
         $this->url = $url ?? $this->url;
         $this->addOptions([CURLOPT_URL => $this->url] + $options + self::DEFAULT_OPTIONS);
-        $this->handle = curl_init();
+        $this->handle = $this->lastHandle = curl_init();
         curl_setopt_array($this->handle, $this->getOptions());
 
         return $this;
@@ -99,7 +105,7 @@ class CurlClient
      */
     public function reset(): self
     {
-        $this->handle = null;
+        $this->handle = $this->lastHandle = null;
         $this->url = null;
         $this->headers = [];
         $this->cookies = [];
@@ -116,7 +122,7 @@ class CurlClient
      */
     public function getHandle(): ?CurlHandle
     {
-        return $this->handle;
+        return $this->lastHandle;
     }
 
     /**
@@ -380,15 +386,11 @@ class CurlClient
     }
 
     /**
-     * This method remove curl handle {@see CurlClient::$handle}, call again {@see CurlClient::init()} for recreate
      * @return bool|string|null
      */
     public function getResponse(): bool|string|null
     {
-        $response = $this->response;
-        $this->handle = null;
-        $this->response = null;
-        return $response;
+        return $this->response;
     }
 
     /**
@@ -434,7 +436,7 @@ class CurlClient
      */
     public function getCurlInfo(int $option = null): mixed
     {
-        return curl_getinfo($this->handle, $option);
+        return curl_getinfo($this->lastHandle, $option);
     }
 
     /**
@@ -467,11 +469,13 @@ class CurlClient
     }
 
     /**
+     * This method remove curl handle {@see CurlClient::$handle}, call again {@see CurlClient::init()} for recreate
      * @param string $request
      * @param array|object|string $data
      * @param bool $payload
      * @param bool $json
      * @return $this
+     * @throws CurlExecException
      */
     private function curlExec(string $request, array|object|string $data = [], bool $payload = false, bool $json = true): self
     {
@@ -488,6 +492,13 @@ class CurlClient
         }
 
         $this->response = curl_exec($this->handle);
+
+        $errno = curl_errno($this->handle);
+        if ($errno !== 0) {
+            throw new CurlExecException(curl_error($this->handle), $errno);
+        }
+
+        $this->handle = null;
 
         return $this;
     }
