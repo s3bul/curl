@@ -470,7 +470,7 @@ class CurlClient
      * @param bool $json
      * @return $this
      */
-    private function callCurl(string $request, array|object|string $data = [], bool $payload = false, bool $json = true): self
+    private function curlExec(string $request, array|object|string $data = [], bool $payload = false, bool $json = true): self
     {
         $this->checkClient();
         $this->setCurlOption(CURLOPT_CUSTOMREQUEST, $request);
@@ -494,7 +494,7 @@ class CurlClient
      */
     public function get(array|object|string $data = []): self
     {
-        return $this->callCurl(self::GET, $data);
+        return $this->curlExec(self::GET, $data);
     }
 
     /**
@@ -504,7 +504,7 @@ class CurlClient
      */
     public function post(array|object|string $data = [], bool $json = true): self
     {
-        return $this->callCurl(self::POST, $data, true, $json);
+        return $this->curlExec(self::POST, $data, true, $json);
     }
 
     /**
@@ -514,7 +514,7 @@ class CurlClient
      */
     public function put(array|object|string $data = [], bool $json = true): self
     {
-        return $this->callCurl(self::PUT, $data, true, $json);
+        return $this->curlExec(self::PUT, $data, true, $json);
     }
 
     /**
@@ -524,7 +524,7 @@ class CurlClient
      */
     public function patch(array|object|string $data = [], bool $json = true): self
     {
-        return $this->callCurl(self::PATCH, $data, true, $json);
+        return $this->curlExec(self::PATCH, $data, true, $json);
     }
 
     /**
@@ -534,7 +534,7 @@ class CurlClient
      */
     public function delete(array|object|string $data = [], bool $json = true): self
     {
-        return $this->callCurl(self::DELETE, $data, true, $json);
+        return $this->curlExec(self::DELETE, $data, true, $json);
     }
 
 }
