@@ -36,7 +36,7 @@ class CurlClientTest extends Unit
         $this->tester->assertEquals(false, $curl->getOption(CURLOPT_RETURNTRANSFER));
     }
 
-    public function testWhenGetNotExistsUsersExpectJsonStructure(): void
+    public function testWhenGetNotExistsUsersExpectHttpCodeIsNotFound(): void
     {
         $curl = new CurlClient();
         $curl->init(self::SERVICE_URI . '/0')
@@ -90,10 +90,10 @@ class CurlClientTest extends Unit
         $this->tester->assertEquals(HttpCode::NO_CONTENT, $curl->getCurlInfoHttpCode());
     }
 
-    public function testWhenCreateAndDeleteUserExpectEmailAsTheSameAfterCreateAndHttpCodeIs204AfterDelete(): void
+    public function testWhenCreateAndDeleteUserExpectEmailAsTheSameAfterCreateAndHttpCodeIsNoContentAfterDelete(): void
     {
         $userId = $this->whenCreateUserExpectEmailAsTheSame();
-        $this->whenDeleteUserExpectHttpCodeIs204($userId);
+        $this->whenDeleteUserExpectHttpCodeIsNoContent($userId);
     }
 
 }
