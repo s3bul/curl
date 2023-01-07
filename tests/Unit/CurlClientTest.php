@@ -79,7 +79,7 @@ class CurlClientTest extends Unit
         return $userId;
     }
 
-    private function whenDeleteUserExpectHttpCodeIs204(int $userId): void
+    private function whenDeleteUserExpectHttpCodeIsNoContent(int $userId): void
     {
         $curl = new CurlClient();
         $curl->addHeader('Authorization', 'Bearer ' . getenv('TEST_API_TOKEN'))
