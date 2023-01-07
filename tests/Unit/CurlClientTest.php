@@ -59,6 +59,18 @@ class CurlClientTest extends Unit
         $this->tester->assertIsArray($decoded);
     }
 
+    public function testWhenGetUsersWithFilterExpectJsonStructureAndOneElement(): void
+    {
+        $curl = new CurlClient();
+        $response = $curl->init(self::SERVICE_URI)
+            ->get(['id' => 269])
+            ->getResponse();
+        $this->tester->assertJson($response);
+        $decoded = json_decode($response);
+        $this->tester->assertIsArray($decoded);
+        $this->tester->assertCount(1, $decoded);
+    }
+
     private function whenCreateUserExpectEmailAsTheSame(): int
     {
         $curl = new CurlClient();
@@ -76,6 +88,8 @@ class CurlClientTest extends Unit
         $this->tester->assertJson($response);
         $decoded = json_decode($response);
         $this->tester->assertIsObject($decoded);
+        $this->tester->assertObjectHasAttribute('id', $decoded);
+        $this->tester->assertObjectHasAttribute('email', $decoded);
         $userId = $decoded->id;
         $this->tester->assertIsInt($userId);
         $this->tester->assertEquals($email, $decoded->email);

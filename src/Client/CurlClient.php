@@ -455,7 +455,7 @@ class CurlClient
     /**
      * @return void
      */
-    private function checkClient(): void
+    private function checkHandle(): void
     {
         if (is_null($this->handle)) {
             throw new InvalidArgumentException('Curl: First call "init" method');
@@ -471,8 +471,9 @@ class CurlClient
      */
     private function curlExec(string $request, array|object|string $data = [], bool $payload = false, bool $json = true): self
     {
-        $this->checkClient();
+        $this->checkHandle();
         $this->setCurlOption(CURLOPT_CUSTOMREQUEST, $request);
+        $this->setCurlOption(CURLOPT_URL, $this->url);
         if (!empty($data)) {
             if ($payload) {
                 $this->setCurlOption(CURLOPT_POST, true);
