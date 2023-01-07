@@ -28,6 +28,10 @@ class CurlClient
     const CONNECT = 'CONNECT';
     const MERGE = 'MERGE';
 
+    private const DEFAULT_OPTIONS = [
+        CURLOPT_RETURNTRANSFER => true,
+    ];
+
     /**
      * @var CurlHandle|null
      */
@@ -41,22 +45,17 @@ class CurlClient
     /**
      * @var string[]
      */
-    private array $cookies = [];
-
-    /**
-     * @var string[]
-     */
     private array $headers = [];
 
     /**
      * @var string[]
      */
-    private array $options = [];
+    private array $cookies = [];
 
     /**
-     * @var string|bool|null
+     * @var array
      */
-    private string|bool|null $response = null;
+    private array $options = self::DEFAULT_OPTIONS;
 
     /**
      * @var int
@@ -76,21 +75,22 @@ class CurlClient
     private bool $disableArrayBracketInQuery = false;
 
     /**
-     * @var bool
+     * @var string|bool|null
      */
-    private bool $returnTransfer = true;
+    private string|bool|null $response = null;
 
     /**
      * @param string|null $url
-     * @param string[] $options
+     * @param array $options
      * @return $this
      */
     public function init(string $url = null, array $options = []): self
     {
-        $_url = $url ?? $this->url;
-        $this->handle = curl_init($_url);
-        $this->url = $_url;
-        curl_setopt_array($this->handle, $options + $this->getOptions());
+        $this->handle = curl_init();
+        $this->url = $url ?? $this->url;
+        $_options = [CURLOPT_URL => $this->url] + $options + self::DEFAULT_OPTIONS;
+        $this->setOptions($_options);
+        curl_setopt_array($this->handle, $this->getOptions());
 
         return $this;
     }
@@ -102,9 +102,13 @@ class CurlClient
     {
         $this->handle = null;
         $this->url = null;
-        $this->cookies = [];
         $this->headers = [];
-        $this->options = [];
+        $this->cookies = [];
+        $this->options = self::DEFAULT_OPTIONS;
+        $this->urlEncType = PHP_QUERY_RFC1738;
+        $this->postFieldsEncType = PHP_QUERY_RFC1738;
+        $this->disableArrayBracketInQuery = false;
+        $this->response = null;
         return $this;
     }
 
@@ -119,7 +123,7 @@ class CurlClient
     /**
      * @return string|null
      */
-    private function getUrl(): ?string
+    public function getUrl(): ?string
     {
         return $this->url;
     }
@@ -135,7 +139,6 @@ class CurlClient
         return $this;
     }
 
-
     /**
      * @return string[]
      */
@@ -145,12 +148,12 @@ class CurlClient
     }
 
     /**
-     * @return $this
+     * @param string $header
+     * @return string|null
      */
-    public function clearHeaders(): self
+    public function getHeader(string $header): ?string
     {
-        $this->headers = [];
-        return $this;
+        return $this->headers[$header] ?? null;
     }
 
     /**
@@ -173,7 +176,7 @@ class CurlClient
         if (is_null($value)) {
             return $this->removeHeader($header);
         }
-        $this->headers[$header] = "$header: $value";
+        $this->headers[$header] = $value;
         return $this;
     }
 
@@ -195,7 +198,7 @@ class CurlClient
      */
     public function setHeaders(array $headers): self
     {
-        $this->clearHeaders();
+        $this->headers = [];
         return $this->addHeaders($headers);
     }
 
@@ -208,12 +211,21 @@ class CurlClient
     }
 
     /**
-     * @param string $key
+     * @param string $cookie
+     * @return string|null
+     */
+    public function getCookie(string $cookie): ?string
+    {
+        return $this->cookies[$cookie] ?? null;
+    }
+
+    /**
+     * @param string $cookie
      * @return $this
      */
-    public function removeCookie(string $key): self
+    public function removeCookie(string $cookie): self
     {
-        unset($this->cookies[$key]);
+        unset($this->cookies[$cookie]);
         return $this;
     }
 
@@ -259,14 +271,26 @@ class CurlClient
     public function getOptions(): array
     {
         $custom = [];
+        if (count($this->headers) > 0) {
+            $custom[CURLOPT_HTTPHEADER] = array_map(
+                fn(string $header, string $value): string => "$header: $value",
+                array_keys($this->headers),
+                array_values($this->headers),
+            );
+        }
         if (count($this->cookies) > 0) {
             $custom[CURLOPT_COOKIE] = $this->httpBuildQuery($this->cookies, '', '; ');
         }
-        if (count($this->headers) > 0) {
-            $custom[CURLOPT_HTTPHEADER] = array_values($this->headers);
-        }
-        $custom[CURLOPT_RETURNTRANSFER] = $this->returnTransfer;
         return $custom + $this->options;
+    }
+
+    /**
+     * @param int $option
+     * @return mixed
+     */
+    public function getOption(int $option): mixed
+    {
+        return $this->options[$option] ?? null;
     }
 
     /**
@@ -305,7 +329,7 @@ class CurlClient
     /**
      * @return int
      */
-    private function getUrlEncType(): int
+    public function getUrlEncType(): int
     {
         return $this->urlEncType;
     }
@@ -323,7 +347,7 @@ class CurlClient
     /**
      * @return int
      */
-    private function getPostFieldsEncType(): int
+    public function getPostFieldsEncType(): int
     {
         return $this->postFieldsEncType;
     }
@@ -357,24 +381,6 @@ class CurlClient
     }
 
     /**
-     * @return bool
-     */
-    public function isReturnTransfer(): bool
-    {
-        return $this->returnTransfer;
-    }
-
-    /**
-     * @param bool $returnTransfer
-     * @return $this
-     */
-    public function setReturnTransfer(bool $returnTransfer): self
-    {
-        $this->returnTransfer = $returnTransfer;
-        return $this;
-    }
-
-    /**
      * @return bool|string|null
      */
     public function getResponse(): bool|string|null
@@ -394,7 +400,7 @@ class CurlClient
         $prefix = is_null($numericPrefix) ? '' : $numericPrefix;
         $separator = is_null($argSeparator) ? '&' : $argSeparator;
         $result = http_build_query($data, $prefix, $separator, is_null($encType) ? PHP_QUERY_RFC1738 : $encType);
-        return $this->isDisableArrayBracketInQuery() ? preg_replace('/%5B\d*%5D/', '', $result) : $result;
+        return $this->disableArrayBracketInQuery ? preg_replace('/%5B\d*%5D/', '', $result) : $result;
     }
 
     /**
@@ -405,7 +411,7 @@ class CurlClient
      */
     private function buildUrlQuery(object|array $data, string $numericPrefix = null, string $argSeparator = null): string
     {
-        return $this->httpBuildQuery($data, $numericPrefix, $argSeparator, $this->getUrlEncType());
+        return $this->httpBuildQuery($data, $numericPrefix, $argSeparator, $this->urlEncType);
     }
 
     /**
@@ -416,24 +422,14 @@ class CurlClient
      */
     private function buildPostFieldsQuery(object|array $data, string $numericPrefix = null, string $argSeparator = null): string
     {
-        return $this->httpBuildQuery($data, $numericPrefix, $argSeparator, $this->getPostFieldsEncType());
-    }
-
-    /**
-     * @return void
-     */
-    private function checkClient(): void
-    {
-        if (!($this->handle instanceof CurlHandle)) {
-            throw new InvalidArgumentException('Curl: First call "init" method');
-        }
+        return $this->httpBuildQuery($data, $numericPrefix, $argSeparator, $this->postFieldsEncType);
     }
 
     /**
      * @param int|null $option
      * @return mixed
      */
-    public function getCurlInfo(?int $option): mixed
+    public function getCurlInfo(int $option = null): mixed
     {
         return curl_getinfo($this->handle, $option);
     }
@@ -455,6 +451,16 @@ class CurlClient
     {
         $this->addOption($option, $value);
         return curl_setopt($this->handle, $option, $value);
+    }
+
+    /**
+     * @return void
+     */
+    private function checkClient(): void
+    {
+        if (is_null($this->handle)) {
+            throw new InvalidArgumentException('Curl: First call "init" method');
+        }
     }
 
     /**
@@ -483,10 +489,10 @@ class CurlClient
     }
 
     /**
-     * @param array $data
+     * @param array|object|string $data
      * @return $this
      */
-    public function get(array $data = []): self
+    public function get(array|object|string $data = []): self
     {
         return $this->callCurl(self::GET, $data);
     }
