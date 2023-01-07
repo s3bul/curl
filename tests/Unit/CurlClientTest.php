@@ -23,15 +23,18 @@ class CurlClientTest extends Unit
     {
         $url = uniqid('url_');
         $curl = new CurlClient();
-        $curl->init($url, [CURLOPT_SSL_VERIFYHOST => 2, CURLOPT_RETURNTRANSFER => false]);
+        $curl->addOption(CURLOPT_SSL_VERIFYPEER, true)
+            ->init($url, [CURLOPT_SSL_VERIFYHOST => 2, CURLOPT_RETURNTRANSFER => false]);
         $this->tester->assertInstanceOf(CurlHandle::class, $curl->getHandle());
         $this->tester->assertEquals($url, $curl->getUrl());
         $this->tester->assertIsArray($curl->getHeaders());
         $this->tester->assertIsArray($curl->getCookies());
         $this->tester->assertIsArray($curl->getOptions());
+        $this->tester->assertArrayHasKey(CURLOPT_SSL_VERIFYPEER, $curl->getOptions());
         $this->tester->assertArrayHasKey(CURLOPT_URL, $curl->getOptions());
         $this->tester->assertArrayHasKey(CURLOPT_SSL_VERIFYHOST, $curl->getOptions());
         $this->tester->assertArrayHasKey(CURLOPT_RETURNTRANSFER, $curl->getOptions());
+        $this->tester->assertEquals(true, $curl->getOption(CURLOPT_SSL_VERIFYPEER));
         $this->tester->assertEquals(2, $curl->getOption(CURLOPT_SSL_VERIFYHOST));
         $this->tester->assertEquals(false, $curl->getOption(CURLOPT_RETURNTRANSFER));
     }
