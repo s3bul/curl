@@ -74,12 +74,12 @@ class CurlClientTest extends Unit
     private function whenCreateUserExpectEmailAsTheSame(): int
     {
         $curl = new CurlClient();
-        $email = uniqid('curl_') . '@s3bul.pl';
+        $email = uniqid('curl_') . '@curl.pl';
         $response = $curl->addHeader('Authorization', 'Bearer ' . getenv('TEST_API_TOKEN'))
             ->init(self::SERVICE_URI)
             ->post([
                 'email' => $email,
-                'name' => 's3bul',
+                'name' => 'Curl Client',
                 'gender' => 'male',
                 'status' => 'active',
             ], false)
