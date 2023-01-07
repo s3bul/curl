@@ -87,7 +87,9 @@ class CurlClient
      */
     public function init(string $url = null, array $options = []): self
     {
-        $this->handle = curl_init($url ?? $this->url);
+        $_url = $url ?? $this->url;
+        $this->handle = curl_init($_url);
+        $this->url = $_url;
         curl_setopt_array($this->handle, $options + $this->getOptions());
 
         return $this;
