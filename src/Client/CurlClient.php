@@ -481,7 +481,6 @@ class CurlClient
     {
         $this->checkHandle();
         $this->setCurlOption(CURLOPT_CUSTOMREQUEST, $request);
-        $this->setCurlOption(CURLOPT_URL, $this->url);
         if (!empty($data)) {
             if ($payload) {
                 $this->setCurlOption(CURLOPT_POST, true);
