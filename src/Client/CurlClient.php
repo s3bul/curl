@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace S3bul\Client;
 
 use CurlHandle;
-use InvalidArgumentException;
 use S3bul\Exception\CurlExecException;
+use S3bul\Exception\CurlHandleException;
 
 /**
  * Class CurlClient
@@ -460,11 +460,12 @@ class CurlClient
 
     /**
      * @return void
+     * @throws CurlHandleException
      */
     private function checkHandle(): void
     {
         if (is_null($this->handle)) {
-            throw new InvalidArgumentException('Curl: First call "init" method');
+            throw new CurlHandleException('First call "init" method');
         }
     }
 
