@@ -455,7 +455,6 @@ class CurlClient
      */
     private function setCurlOption(int $option, mixed $value): bool
     {
-        $this->addOption($option, $value);
         return curl_setopt($this->handle, $option, $value);
     }
 
