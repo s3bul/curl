@@ -7,6 +7,7 @@ use CurlHandle;
 use JsonException;
 use S3bul\Exception\CurlExecException;
 use S3bul\Exception\CurlHandleException;
+use S3bul\Util\HttpBuildQuery;
 
 /**
  * Class CurlClient
@@ -285,7 +286,7 @@ class CurlClient
             );
         }
         if (count($this->cookies) > 0) {
-            $custom[CURLOPT_COOKIE] = $this->httpBuildQuery($this->cookies, '', '; ');
+            $custom[CURLOPT_COOKIE] = HttpBuildQuery::build($this->cookies, '', '; ');
         }
         return $custom + $this->options;
     }
@@ -398,26 +399,11 @@ class CurlClient
      * @param object|array $data
      * @param string|null $numericPrefix
      * @param string|null $argSeparator
-     * @param int|null $encType
-     * @return string
-     */
-    private function httpBuildQuery(object|array $data, string $numericPrefix = null, string $argSeparator = null, int $encType = null): string
-    {
-        $prefix = is_null($numericPrefix) ? '' : $numericPrefix;
-        $separator = is_null($argSeparator) ? '&' : $argSeparator;
-        $result = http_build_query($data, $prefix, $separator, is_null($encType) ? PHP_QUERY_RFC1738 : $encType);
-        return $this->disableArrayBracketInQuery ? preg_replace('/%5B\d*%5D/', '', $result) : $result;
-    }
-
-    /**
-     * @param object|array $data
-     * @param string|null $numericPrefix
-     * @param string|null $argSeparator
      * @return string
      */
     private function buildUrlQuery(object|array $data, string $numericPrefix = null, string $argSeparator = null): string
     {
-        return $this->httpBuildQuery($data, $numericPrefix, $argSeparator, $this->urlEncType);
+        return HttpBuildQuery::build($data, $numericPrefix, $argSeparator, $this->urlEncType, !$this->disableArrayBracketInQuery);
     }
 
     /**
@@ -428,7 +414,7 @@ class CurlClient
      */
     private function buildPostFieldsQuery(object|array $data, string $numericPrefix = null, string $argSeparator = null): string
     {
-        return $this->httpBuildQuery($data, $numericPrefix, $argSeparator, $this->postFieldsEncType);
+        return HttpBuildQuery::build($data, $numericPrefix, $argSeparator, $this->postFieldsEncType, !$this->disableArrayBracketInQuery);
     }
 
     /**
