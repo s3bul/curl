@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace S3bul\Client;
 
 use CurlHandle;
+use JsonException;
 use S3bul\Exception\CurlExecException;
 use S3bul\Exception\CurlHandleException;
 
@@ -477,15 +478,16 @@ class CurlClient
      * @param bool $json
      * @return $this
      * @throws CurlExecException
+     * @throws JsonException
      */
-    private function curlExec(string $request, array|object|string $data = [], bool $payload = false, bool $json = true): self
+    private function curlExec(string $request, array|object|string $data = [], bool $payload = false, bool $json = false): self
     {
         $this->checkHandle();
         $this->setCurlOption(CURLOPT_CUSTOMREQUEST, $request);
         if (!empty($data)) {
             if ($payload) {
                 $this->setCurlOption(CURLOPT_POST, true);
-                $this->setCurlOption(CURLOPT_POSTFIELDS, $json ? json_encode($data) : $data);
+                $this->setCurlOption(CURLOPT_POSTFIELDS, $json ? json_encode($data, JSON_THROW_ON_ERROR) : $data);
             } else {
                 $this->setCurlOption(CURLOPT_URL, $this->url . '?' . $this->buildUrlQuery($data));
             }
@@ -517,7 +519,7 @@ class CurlClient
      * @param bool $json
      * @return $this
      */
-    public function post(array|object|string $data = [], bool $json = true): self
+    public function post(array|object|string $data = [], bool $json = false): self
     {
         return $this->curlExec(self::POST, $data, true, $json);
     }
@@ -527,7 +529,7 @@ class CurlClient
      * @param bool $json
      * @return $this
      */
-    public function put(array|object|string $data = [], bool $json = true): self
+    public function put(array|object|string $data = [], bool $json = false): self
     {
         return $this->curlExec(self::PUT, $data, true, $json);
     }
@@ -537,7 +539,7 @@ class CurlClient
      * @param bool $json
      * @return $this
      */
-    public function patch(array|object|string $data = [], bool $json = true): self
+    public function patch(array|object|string $data = [], bool $json = false): self
     {
         return $this->curlExec(self::PATCH, $data, true, $json);
     }
@@ -547,7 +549,7 @@ class CurlClient
      * @param bool $json
      * @return $this
      */
-    public function delete(array|object|string $data = [], bool $json = true): self
+    public function delete(array|object|string $data = [], bool $json = false): self
     {
         return $this->curlExec(self::DELETE, $data, true, $json);
     }

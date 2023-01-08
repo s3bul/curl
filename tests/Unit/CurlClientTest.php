@@ -67,7 +67,7 @@ class CurlClientTest extends Unit
     {
         $curl = new CurlClient();
         $response = $curl->init(self::SERVICE_URI)
-            ->get(['id' => 269])
+            ->get(['page' => 1, 'per_page' => 1])
             ->getResponse();
         $this->tester->assertJson($response);
         $decoded = json_decode($response);
@@ -86,7 +86,7 @@ class CurlClientTest extends Unit
                 'name' => 'Curl Client',
                 'gender' => 'male',
                 'status' => 'active',
-            ], false)
+            ])
             ->getResponse();
 
         $this->tester->assertJson($response);
