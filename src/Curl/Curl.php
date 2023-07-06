@@ -175,7 +175,7 @@ class Curl extends PhpCurl
             }
         }
 
-        if(!empty($data)) {
+        if(!is_null($data)) {
             $this->setOpt(CURLOPT_POSTFIELDS, $data);
         }
     }
